@@ -1,0 +1,60 @@
+spring:
+  application:
+    # 需要改成实际应用名称
+    name: fjt-lottery
+  main:
+    #  解决调用feignName重复异常的问题
+    allow-bean-definition-overriding: true
+  mvc:
+    throw-exception-if-no-handler-found: true
+  resources:
+    add-mappings: true
+  messages:
+    encoding: UTF-8
+    basename: i18n/common/message,i18n/validations/message,i18n/ui/message
+  cloud:
+    nacos:
+      server-addr: 172.16.1.37:8848
+      username: ${spring.profiles.active}
+      password: ${spring.profiles.active}
+      # Nacos配置中心
+      config:
+        group: ${spring.profiles.active}
+        namespace: ${spring.profiles.active}  
+        file-extension: yaml
+        refresh-enabled: true
+      # Nacos注册中心
+      discovery:
+        group: ${spring.profiles.active}
+        namespace: ${spring.profiles.active}
+        enabled: true
+  # 数据库配置
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      test-while-idle: true
+      test-on-borrow:  false
+      test-on-return: false
+      ## 打开PSCache，并且指定每个连接上PSCache的大小
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      validation-query: select 1
+      validation-query-timeout: 60000
+      #配置监控统计拦截的filters，去掉后监控界面sql无法统计，'wall'用于防火墙
+      filters: stat,wall,slf4j
+      filter:
+        stat:
+          log-slow-sql: false
+          merge-sql: true
+          db-type: mysql
+          slow-sql-millis: 1000
+# actuator配置       
+management:
+  endpoints:
+    web:
+      base-path: /acv
+      exposure:
+        include: '*'
+    jmx:
+      exposure:
+        exclude: "*"

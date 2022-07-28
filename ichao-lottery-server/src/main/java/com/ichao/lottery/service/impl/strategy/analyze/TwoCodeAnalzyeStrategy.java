@@ -1,0 +1,145 @@
+/**
+ * 文件名称:          			AloneNumberStrategy.java
+ * 版权所有@ 2020-2021 	富金通金融信息服务(上海)有限公司
+ * 编译器:           			JDK1.8
+ */
+
+package com.ichao.lottery.service.impl.strategy.analyze;
+
+import java.util.Date;
+
+import org.springframework.stereotype.Service;
+
+import com.alibaba.fastjson.annotation.JSONField;
+import com.fjt.common.base.util.FjtDateUtils;
+import com.ichao.lottery.dto.P3Dto;
+import com.ichao.lottery.dto.analyze.TwoCodeAnalyzeResult;
+import com.ichao.lottery.dto.result.AnalyzeResultDto;
+import com.ichao.lottery.service.IAnalyzeStrategy;
+
+import lombok.Data;
+
+/**
+ * 二码分析策略
+ * Version		1.0.0      
+ * 
+ * @author		FPM0393
+ * 
+ * Date			2022-07-20 20:19
+ * 
+ */
+@Service
+public class TwoCodeAnalzyeStrategy implements IAnalyzeStrategy {
+
+    
+    /**
+     * 最大间隔下2码期数
+     */
+    private TwoCodeAnalyze leak;
+    
+    /**
+     * 连续下2码期数
+     */
+    private TwoCodeAnalyze continuous;
+    
+    @Override
+    public void doAnalyze(P3Dto pre, P3Dto curr, AnalyzeResultDto respDto) {
+        if (pre == null) {
+            return;
+        }
+        if (leak == null) {
+            leak = new TwoCodeAnalyze();
+            continuous = new TwoCodeAnalyze();
+        }
+        TwoCodeAnalyzeResult twoDto = respDto.getTwoCode();
+        
+        // 
+        boolean isTwoRepeatCode = curr.isTwoRepeatCode(pre);
+        if (isTwoRepeatCode) {
+            twoDto.setCountRepeatCount(twoDto.getCountRepeatCount() + 1);
+        }
+        // 遗漏
+        execAnalyze(pre, curr, leak, isTwoRepeatCode);
+        // 连续
+        execAnalyze(pre, curr, continuous, !isTwoRepeatCode);
+    }
+    
+    
+    /**
+     * 
+     * @param pre
+     * @param curr
+     * @param sa
+     * @param type
+     */
+    private void execAnalyze(P3Dto pre, P3Dto curr, TwoCodeAnalyze tc, boolean isRepeat) {
+     // 重复两个号
+        if (isRepeat) {
+            // 遗漏
+            if (tc.getTempCount() >= tc.getCount()) {
+                //
+                tc.setCount(tc.getTempCount());
+                // 结束信息
+                tc.setEndTime(pre.getDrawTime());
+                tc.setEndNo(pre.getDrawNo());
+                // 开始信息
+                if (tc.getStartP3Dto() != null) {
+                    tc.setStartTime(tc.getStartP3Dto().getDrawTime());
+                    tc.setStartNo(tc.getStartP3Dto().getDrawNo());
+                }
+            }
+            tc.setTempCount(0);
+            tc.setStartP3Dto(null);
+            
+        } else {
+            tc.setTempCount(tc.getTempCount() + 1);
+            if (tc.getStartP3Dto() == null) {
+                tc.setStartP3Dto(curr);
+            }
+        }
+    }
+    
+    /**
+     * 
+     *
+     */
+    @Override
+    public void finish(AnalyzeResultDto respDto) {
+        TwoCodeAnalyzeResult tc = respDto.getTwoCode();
+        tc.setLeak(leak.toString());
+        tc.setContinuous(continuous.toString());
+        leak = null;
+        continuous = null;
+    }
+    
+    @Data
+    class TwoCodeAnalyze {
+        // 期数
+        private int count = 0;
+        // 开始日期
+        @JSONField(format = "yyyy-MM-dd")
+        private Date startTime;
+        // 开始期号
+        private String startNo;
+        // 结束日期
+        @JSONField(format = "yyyy-MM-dd")
+        private Date endTime;
+        // 结束期号
+        private String endNo;
+        //
+        @JSONField(deserialize = false, serialize = false)
+        private int tempCount;
+        @JSONField(deserialize = false, serialize = false)
+        private P3Dto startP3Dto;
+        
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("count=").append(count).append(", ");
+            sb.append("期号：").append(startNo).append(" - ").append(endNo).append(", ");
+            sb.append("日期：").append(FjtDateUtils.formatDate(FjtDateUtils.PATTERN_ISO_ON_DATE, startTime)).append(" - ")
+              .append(FjtDateUtils.formatDate(FjtDateUtils.PATTERN_ISO_ON_DATE, endTime));
+            return sb.toString();
+        }
+    }
+}

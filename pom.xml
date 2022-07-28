@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.fjt</groupId>
+		<artifactId>root-pom</artifactId>
+		<version>1.0.0</version>
+		<relativePath /> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>com.ichao</groupId>
+	<artifactId>ichao-lottery</artifactId>
+	<packaging>pom</packaging>
+	<name>ichao-lottery</name>
+	<description>乐透工具</description>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
+		<!-- 日志框架 -->
+		<dependency>
+			<groupId>com.fjt</groupId>
+			<artifactId>fjt-log</artifactId>
+		</dependency>
+		<!-- 基础公共组件 -->
+		<dependency>
+			<groupId>com.fjt</groupId>
+			<artifactId>fjt-common-base</artifactId>
+		</dependency>
+		<!-- http请求组件 -->
+		<dependency>
+			<groupId>com.fjt</groupId>
+			<artifactId>fjt-httpclient</artifactId>
+		</dependency>
+	</dependencies>
+	<modules>
+		<module>ichao-lottery-base</module>
+		<module>ichao-lottery-api</module>
+		<module>ichao-lottery-api-http</module>
+		<module>ichao-lottery-server</module>
+	</modules>
+</project>
